@@ -333,7 +333,15 @@ void ThingTypeManager::addItemType(const ItemTypePtr& itemType)
     uint16 id = itemType->getServerId();
     if(unlikely(id >= m_itemTypes.size()))
         m_itemTypes.resize(id + 1, m_nullItemType);
-    m_itemTypes[id] = itemType;
+
+    if(m_itemTypes[id] == m_nullItemType) {
+        m_itemTypes[id] = itemType;
+    } else if(m_itemTypes[id]->getClientId() == 0) {
+        g_logger.warning(stdext::format("duplicate item in OTB file for server id: %d, replacing the previous one due to client id = 0", id));
+        m_itemTypes[id] = itemType;
+    } else {
+        g_logger.warning(stdext::format("duplicate item in OTB file for server id: %d, ignoring", id));
+    }
 }
 
 const ItemTypePtr& ThingTypeManager::findItemTypeByClientId(uint16 id)
